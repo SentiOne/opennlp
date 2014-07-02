@@ -27,6 +27,7 @@ import opennlp.tools.formats.Conll03NameSampleStreamFactory;
 import opennlp.tools.formats.ConllXPOSSampleStreamFactory;
 import opennlp.tools.formats.ConllXSentenceSampleStreamFactory;
 import opennlp.tools.formats.ConllXTokenSampleStreamFactory;
+import opennlp.tools.formats.NkjpCorpusPOSSampleStreamFactory;
 import opennlp.tools.formats.DocumentSampleStreamFactory;
 import opennlp.tools.formats.EvalitaNameSampleStreamFactory;
 import opennlp.tools.formats.LeipzigDocumentSampleStreamFactory;
@@ -88,6 +89,7 @@ public final class StreamFactoryRegistry {
     BioNLP2004NameSampleStreamFactory.registerFactory();
     Conll02NameSampleStreamFactory.registerFactory();
     Conll03NameSampleStreamFactory.registerFactory();
+	NkjpCorpusPOSSampleStreamFactory.registerFactory();
     EvalitaNameSampleStreamFactory.registerFactory();
     ConllXPOSSampleStreamFactory.registerFactory();
     ConllXSentenceSampleStreamFactory.registerFactory();
