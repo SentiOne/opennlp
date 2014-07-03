@@ -18,8 +18,12 @@ import java.util.Comparator;
 
 public class NkjpCorpusPOSSampleStreamFactory extends AbstractSampleStreamFactory<POSSample> {
 	interface Parameters extends BasicFormatParams {
-		@ArgumentParser.ParameterDescription(valueName = "nkjp|universal")
+		@ArgumentParser.ParameterDescription(valueName = "nkjp|universal", description = "Which tagset should model learn. Nkjp which has 32 tags, or universal which is simplified and has only 12.")
 		String getTagset();
+
+		@Override
+		@ArgumentParser.ParameterDescription(valueName = "sampleData", description = "Path to the nkjp directory corpus. It just should be an extracted nkjp corpus.")
+		File getData();
 	}
 
 	protected <P> NkjpCorpusPOSSampleStreamFactory(Class<P> params) {
@@ -34,8 +38,10 @@ public class NkjpCorpusPOSSampleStreamFactory extends AbstractSampleStreamFactor
 	public ObjectStream<POSSample> create(String[] args) {
 		Parameters params = ArgumentParser.parse(args, Parameters.class);
 
+
 		try {
 			String tagSet = params.getTagset();
+			boolean useUniversal = tagSet != null && "universal".equals(tagSet);
 			File rootCorpusDictionary = params.getData();
 
 			if (!rootCorpusDictionary.exists()) {
@@ -67,7 +73,7 @@ public class NkjpCorpusPOSSampleStreamFactory extends AbstractSampleStreamFactor
 
 			InputStreamFactory[] corpusPosFiles = corpusPosFileList.toArray(new InputStreamFactory[corpusPosFileList.size()]);
 
-			return new NkjpCorpusPOSSampleStream(corpusPosFiles);
+			return new NkjpCorpusPOSSampleStream(corpusPosFiles, useUniversal);
 		} catch (IOException e) {
 			throw CmdLineUtil.createObjectStreamError(e);
 		}

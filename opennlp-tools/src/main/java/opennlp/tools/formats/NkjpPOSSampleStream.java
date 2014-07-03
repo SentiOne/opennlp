@@ -22,15 +22,20 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 	private final XPathExpression wordExpression;
 	private final XPathExpression posExpression;
+	private final boolean useUniversalTags;
 	private List<Element> sentenceList;
 	private int currentIndex = 0;
+	// universal mapping
+	private final static HashMap<String, String> universalPosPlMapping = createMapping();
 
-	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
+	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory, boolean useUniversalTags) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
 		this.sentenceList = new ArrayList<>();
+		this.useUniversalTags = useUniversalTags;
 
 		InputStream inputStream = inputStreamFactory.createInputStream();
 		if (inputStream == null) {
@@ -103,9 +108,16 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 			// Format is some_word_form:pos:....
 			String pos = morphData.split(":")[1 + colonCount];
 
+			if (useUniversalTags) {
+				pos = universalPosPlMapping.get(pos);
+				if (pos == null) {
+					throw new IOException("Unexpected pos interpretation format: " + morphData + "for word: " + word);
+				}
+			}
+
 			return new AbstractMap.SimpleEntry<String, String>(word, pos);
 		} catch (XPathExpressionException e1) {
-			throw new IOException("Expressions didn't match", e1);
+			throw new IOException("Expressions didn't match ", e1);
 		}
 	}
 
@@ -116,5 +128,47 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 
 	@Override
 	public void close() throws IOException {
+	}
+
+	private static HashMap<String, String> createMapping() {
+		HashMap<String, String> map = new HashMap<>();
+		map.put("adj", "ADJ");
+		map.put("adja", "ADJ");
+		map.put("adjc", "ADJ");
+		map.put("adjp", "ADJ");
+		map.put("adv", "ADV");
+		map.put("aglt", "VERB");
+		map.put("bedzie", "VERB");
+		map.put("brev", "X");
+		map.put("burk", "ADV");
+		map.put("comp", "CONJ");
+		map.put("conj", "CONJ");
+		map.put("depr", "NOUN");
+		map.put("fin", "VERB");
+		map.put("ger", "VERB");
+		map.put("ign", "X");
+		map.put("imps", "VERB");
+		map.put("impt", "VERB");
+		map.put("inf", "VERB");
+		map.put("interj", "X");
+		map.put("interp", "INTERP");
+		map.put("num", "NUM");
+		map.put("numcol", "NUM");
+		map.put("pact", "VERB");
+		map.put("pant", "VERB");
+		map.put("pcon", "VERB");
+		map.put("ppas", "VERB");
+		map.put("ppron12", "PRON");
+		map.put("ppron3", "PRON");
+		map.put("praet", "VERB");
+		map.put("pred", "ADP");
+		map.put("prep", "ADP");
+		map.put("qub", "ADV");
+		map.put("siebie", "PRON");
+		map.put("subst", "NOUN");
+		map.put("winien", "VERB");
+		map.put("xxs", "X");
+		map.put("xxx", "X");
+		return map;
 	}
 }

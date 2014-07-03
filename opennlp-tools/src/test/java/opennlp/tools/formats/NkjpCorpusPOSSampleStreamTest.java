@@ -25,7 +25,7 @@ public class NkjpCorpusPOSSampleStreamTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sut = new NkjpCorpusPOSSampleStream(ZipArchiveResourceReader.getTestCorpus());
+		sut = new NkjpCorpusPOSSampleStream(ZipArchiveResourceReader.getTestCorpus(), false);
 	}
 
 	@After

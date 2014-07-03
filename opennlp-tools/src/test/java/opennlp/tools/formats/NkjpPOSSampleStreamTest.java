@@ -8,22 +8,20 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class NkjpPOSSampleStreamTest {
-	private NkjpPOSSampleStream sut;
 	private ResourceAsStreamFactory in;
 
 	@Before
 	public void setUp() throws Exception {
 		in = new ResourceAsStreamFactory(NkjpPOSSampleStreamTest.class, "/opennlp/tools/formats/nkjp.sample");
-		sut = new NkjpPOSSampleStream(in);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		sut.close();
 	}
 
 	@Test
 	public void testRead() throws Exception {
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, false);
 		long sentenceCount = 0;
 		long wordCount = 0;
 		long posCount = 0;
@@ -38,10 +36,13 @@ public class NkjpPOSSampleStreamTest {
 		assertEquals(30, sentenceCount);
 		assertEquals(459, wordCount);
 		assertEquals(wordCount, posCount);
+
+		sut.close();
 	}
 
 	@Test
 	public void testRead2() throws Exception {
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, false);
 		POSSample firstPosSample = sut.read();
 		assertNotNull(firstPosSample);
 
@@ -61,11 +62,39 @@ public class NkjpPOSSampleStreamTest {
 		assertEquals("subst", secondPosSample.getTags()[0]);
 
 		assertNotNull(sut.read());
+
+		sut.close();
+	}
+
+	@Test
+	public void testRead2_universal() throws Exception {
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, true);
+		POSSample firstPosSample = sut.read();
+		assertNotNull(firstPosSample);
+
+		assertEquals(57, firstPosSample.getSentence().length);
+		assertEquals(firstPosSample.getSentence().length, firstPosSample.getTags().length);
+
+		assertEquals("Zatrzasnął", firstPosSample.getSentence()[0]);
+		assertEquals("VERB", firstPosSample.getTags()[0]);
+
+		POSSample secondPosSample = sut.read();
+		assertNotNull(secondPosSample);
+
+		assertEquals(8, secondPosSample.getSentence().length);
+		assertEquals(secondPosSample.getSentence().length, secondPosSample.getTags().length);
+
+		assertEquals("Bohaterem", secondPosSample.getSentence()[0]);
+		assertEquals("NOUN", secondPosSample.getTags()[0]);
+
+		assertNotNull(sut.read());
+
+		sut.close();
 	}
 
 	@Test
 	public void testReset() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, false);
 		POSSample firstSample = sut.read();
 		sut.reset();
 		POSSample shouldBeFirstSample = sut.read();

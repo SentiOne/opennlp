@@ -1,6 +1,5 @@
 package opennlp.tools.formats;
 
-import opennlp.tools.cmdline.SystemInputStreamFactory;
 import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
@@ -11,11 +10,13 @@ import java.util.List;
 
 public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 	private final List<InputStreamFactory> corpusPosFiles;
+	private final boolean useUniversalTags;
 	private int currentIndex = 0;
 	private ObjectStream<POSSample> currentPosStream;
 
-	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory) throws IOException {
+	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory, boolean useUniversalTagSetInsteadOfOriginal) throws IOException {
 		corpusPosFiles = Arrays.asList(fileInputStreamFactory);
+		useUniversalTags = useUniversalTagSetInsteadOfOriginal;
 		init();
 	}
 
@@ -44,7 +45,7 @@ public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 		}
 
 		try {
-			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex));
+			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex), useUniversalTags);
 			currentIndex++;
 			return newStream;
 		} catch (Exception e) {
