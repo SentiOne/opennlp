@@ -1,13 +1,20 @@
 package opennlp.tools.formats;
 
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -18,8 +25,7 @@ public class NkjpCorpusPOSSampleStreamTest {
 
 	@Before
 	public void setUp() throws Exception {
-		NkjpCorpusPOSSampleStreamFactory factory = new NkjpCorpusPOSSampleStreamFactory(NkjpCorpusPOSSampleStreamFactory.Parameters.class);
-		sut = factory.create(new String[] { "-data", "/home/slafulk/Downloads/NKJP-PodkorpusMilionowy-1.0", "-tagset", "nkjp", "-encoding", "utf-8" });
+		sut = new NkjpCorpusPOSSampleStream(ZipArchiveResourceReader.getTestCorpus());
 	}
 
 	@After
@@ -33,13 +39,13 @@ public class NkjpCorpusPOSSampleStreamTest {
 		long wordCount = 0;
 		long posCount = 0;
 
-		POSSample posSample = sut.read();
-		while (posSample != null) {
+		POSSample posSample;
+
+		while ((posSample = sut.read()) != null) {
 			sentenceCount += 1;
 			wordCount += posSample.getSentence().length;
 			posCount += posSample.getTags().length;
 			System.out.println(posSample);
-			posSample = sut.read();
 		}
 
 		System.out.flush();
@@ -55,17 +61,61 @@ public class NkjpCorpusPOSSampleStreamTest {
 		sut.reset();
 		testRead();
 	}
+}
 
-	@Ignore
-	@Test
-	public void generateInputFile() throws Exception {
-		PrintWriter writer = new PrintWriter("/home/slafulk/opennlp_input", "UTF-8");
+class ZipArchiveResourceReader {
+	private static int BUFFER = 2048;
 
-		POSSample posSample = sut.read();
-		while (posSample != null) {
-			writer.println(posSample.toString());
-			posSample = sut.read();
+	private static byte[] readZipEntryAsByteArray(ZipInputStream zis) throws IOException {
+		byte data[] = new byte[BUFFER];
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		BufferedOutputStream bos = new BufferedOutputStream(baos, BUFFER);
+
+		int count;
+		while ((count = zis.read(data, 0, BUFFER)) > -1) {
+			bos.write(data, 0, count);
 		}
-		writer.close();
+		bos.flush();
+
+		byte[] bytes = baos.toByteArray();
+
+		bos.close();
+		baos.close();
+
+		return bytes;
+	}
+
+	public static InputStreamFactory[] getTestCorpus() throws Exception {
+		ResourceAsStreamFactory in =
+			new ResourceAsStreamFactory(NkjpPOSSampleStreamTest.class, "/opennlp/tools/formats/NKJP-PodkorpusMilionowy-1.0_test.zip.sample");
+
+		InputStream inputStream = in.createInputStream();
+		ZipInputStream zis = new ZipInputStream(new BufferedInputStream(inputStream));
+		ZipEntry entry;
+
+		List<InputStreamFactory> list = new ArrayList<>();
+
+		while((entry = zis.getNextEntry()) != null) {
+			if (!entry.isDirectory() && entry.getName().endsWith("ann_morphosyntax.xml")) {
+
+				byte[] bytes = readZipEntryAsByteArray(zis);
+
+				final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+				byteArrayInputStream.mark(bytes.length + 1);
+
+				list.add(new InputStreamFactory() {
+					@Override
+					public InputStream createInputStream() throws IOException {
+						byteArrayInputStream.reset();
+						return byteArrayInputStream;
+					}
+				});
+			}
+		}
+
+		zis.close();
+
+		return list.toArray(new InputStreamFactory[list.size()]);
 	}
 }

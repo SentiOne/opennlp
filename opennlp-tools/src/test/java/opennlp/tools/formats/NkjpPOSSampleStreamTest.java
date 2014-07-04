@@ -28,12 +28,11 @@ public class NkjpPOSSampleStreamTest {
 		long wordCount = 0;
 		long posCount = 0;
 
-		POSSample posSample = sut.read();
-		while (posSample != null) {
+		POSSample posSample;
+		while ((posSample = sut.read()) != null) {
 			sentenceCount += 1;
 			wordCount += posSample.getSentence().length;
 			posCount += posSample.getTags().length;
-			posSample = sut.read();
 		}
 
 		assertEquals(30, sentenceCount);

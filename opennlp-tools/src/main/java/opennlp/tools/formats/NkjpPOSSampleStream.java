@@ -11,7 +11,11 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap;
@@ -25,23 +29,20 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 	private List<Element> sentenceList;
 	private int currentIndex = 0;
 
-	public NkjpPOSSampleStream(InputStreamFactory in) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
-		InputStream in1 = in.createInputStream();
-		if (in1 == null) {
-			throw new IOException("Input stream couldn't be created.");
-		}
-
+	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
 		this.sentenceList = new ArrayList<>();
 
-		InputStream is = in.createInputStream();
+		InputStream inputStream = inputStreamFactory.createInputStream();
+		if (inputStream == null) {
+			throw new IOException("Input stream couldn't be created.");
+		}
 
 		Document document = DocumentBuilderFactory
 				.newInstance()
 				.newDocumentBuilder()
-				.parse(is);
+				.parse(inputStream);
 
-		is.close();
-
+		inputStream.close();
 
 		NodeList sentences = document.getElementsByTagName("s");
 		int sentenceCount = sentences.getLength();
@@ -52,7 +53,6 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 		if (this.sentenceList.size() == 0) {
 			throw new IOException("Empty sentence list!");
 		}
-
 
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		this.wordExpression = xPath.compile("./fs/f[@name=\"orth\"]/string/text()");

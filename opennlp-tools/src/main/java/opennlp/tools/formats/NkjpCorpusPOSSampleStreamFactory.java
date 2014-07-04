@@ -5,6 +5,8 @@ import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
 import opennlp.tools.cmdline.params.BasicFormatParams;
 import opennlp.tools.postag.POSSample;
+import opennlp.tools.util.InputStreamFactory;
+import opennlp.tools.util.MarkableFileInputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
 import java.io.File;
@@ -57,12 +59,13 @@ public class NkjpCorpusPOSSampleStreamFactory extends AbstractSampleStreamFactor
 				}
 			});
 
-			ArrayList<File> corpusPosFileList = new ArrayList<File>();
+			ArrayList<InputStreamFactory> corpusPosFileList = new ArrayList<InputStreamFactory>();
 			for (File dir : directories) {
-				corpusPosFileList.add(new File(dir, "ann_morphosyntax.xml"));
+				MarkableFileInputStreamFactory mfisf = new MarkableFileInputStreamFactory(new File(dir, "ann_morphosyntax.xml"));
+				corpusPosFileList.add(mfisf);
 			}
 
-			File[] corpusPosFiles = corpusPosFileList.toArray(new File[corpusPosFileList.size()]);
+			InputStreamFactory[] corpusPosFiles = corpusPosFileList.toArray(new InputStreamFactory[corpusPosFileList.size()]);
 
 			return new NkjpCorpusPOSSampleStream(corpusPosFiles);
 		} catch (IOException e) {

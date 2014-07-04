@@ -5,19 +5,18 @@ import opennlp.tools.postag.POSSample;
 import opennlp.tools.util.InputStreamFactory;
 import opennlp.tools.util.ObjectStream;
 
-import java.io.*;
-import java.util.List;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.List;
 
 public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
-	private final List<File> corpusPosFiles;
+	private final List<InputStreamFactory> corpusPosFiles;
 	private int currentIndex = 0;
 	private ObjectStream<POSSample> currentPosStream;
 
-	public NkjpCorpusPOSSampleStream(File[] xmlfiles) throws IOException {
-		corpusPosFiles = Arrays.asList(xmlfiles);
-		currentPosStream = getNextPosStream();
+	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory) throws IOException {
+		corpusPosFiles = Arrays.asList(fileInputStreamFactory);
+		init();
 	}
 
 	@Override
@@ -45,12 +44,7 @@ public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 		}
 
 		try {
-			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(new InputStreamFactory() {
-				@Override
-				public InputStream createInputStream() throws IOException {
-					return new FileInputStream(corpusPosFiles.get(currentIndex));
-				}
-			});
+			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex));
 			currentIndex++;
 			return newStream;
 		} catch (Exception e) {
@@ -58,17 +52,17 @@ public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 		}
 	}
 
-	@Override
-	public void reset() throws IOException, UnsupportedOperationException {
+	private void init() throws IOException {
 		currentIndex = 0;
-		close();
 		currentPosStream = getNextPosStream();
 	}
 
 	@Override
+	public void reset() throws IOException {
+		init();
+	}
+
+	@Override
 	public void close() throws IOException {
-		if (currentPosStream != null) {
-			currentPosStream.close();
-		}
 	}
 }
