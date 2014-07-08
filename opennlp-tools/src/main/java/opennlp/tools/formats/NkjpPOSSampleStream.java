@@ -27,15 +27,22 @@ import java.util.HashMap;
 public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 	private final XPathExpression wordExpression;
 	private final XPathExpression posExpression;
-	private final boolean useUniversalTags;
+	private final NkjpTagset tagset;
 	private List<Element> sentenceList;
 	private int currentIndex = 0;
+
+	public enum NkjpTagset {
+		NKJP_SIMPLE,
+		NKJP_FULL,
+		UNIVERSAL_TAGSET
+	}
+
 	// universal mapping
 	private final static HashMap<String, String> universalPosPlMapping = createMapping();
 
-	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory, boolean useUniversalTags) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
+	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory, NkjpTagset tagset) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
 		this.sentenceList = new ArrayList<>();
-		this.useUniversalTags = useUniversalTags;
+		this.tagset = tagset;
 
 		InputStream inputStream = inputStreamFactory.createInputStream();
 		if (inputStream == null) {
@@ -99,19 +106,31 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
         );
 	}
 
+	private String JoinStrings(String[] array, String joinWith, int fromIndex) {
+		String result = array[fromIndex];
+		for (int i = fromIndex + 1; i < array.length; i++) {
+			result += joinWith + array[i];
+		}
+		return result;
+	}
+
 	private Map.Entry<String, String> ExtractWordAndPos(Node node) throws IOException {
 		try {
 			String word = (String)wordExpression.evaluate(node, XPathConstants.STRING);
 			String morphData = (String) posExpression.evaluate(node, XPathConstants.STRING);
 			// there were colons in corpus
 			int colonCount = word.length() - word.replace(":", "").length();
-			// Format is some_word_form:pos:....
-			String pos = morphData.split(":")[1 + colonCount];
 
-			if (useUniversalTags) {
-				pos = universalPosPlMapping.get(pos);
-				if (pos == null) {
-					throw new IOException("Unexpected pos interpretation format: " + morphData + "for word: " + word);
+			String pos;
+			if (NkjpTagset.NKJP_FULL == tagset) {
+				pos = JoinStrings(morphData.split(":"), ":", 1 + colonCount);
+			} else {
+				pos = morphData.split(":")[1 + colonCount];
+				if (NkjpTagset.UNIVERSAL_TAGSET == tagset) {
+					pos = universalPosPlMapping.get(pos);
+					if (pos == null) {
+						throw new IOException("Unexpected pos interpretation format: " + morphData + "for word: " + word);
+					}
 				}
 			}
 

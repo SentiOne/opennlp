@@ -3,6 +3,7 @@ package opennlp.tools.formats;
 import opennlp.tools.postag.POSSample;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -21,7 +22,7 @@ public class NkjpPOSSampleStreamTest {
 
 	@Test
 	public void testRead() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, false);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE);
 		long sentenceCount = 0;
 		long wordCount = 0;
 		long posCount = 0;
@@ -42,7 +43,7 @@ public class NkjpPOSSampleStreamTest {
 
 	@Test
 	public void testRead2() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, false);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE);
 		POSSample firstPosSample = sut.read();
 		assertNotNull(firstPosSample);
 
@@ -68,7 +69,7 @@ public class NkjpPOSSampleStreamTest {
 
 	@Test
 	public void testRead2_universal() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, true);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.UNIVERSAL_TAGSET);
 		POSSample firstPosSample = sut.read();
 		assertNotNull(firstPosSample);
 
@@ -93,8 +94,33 @@ public class NkjpPOSSampleStreamTest {
 	}
 
 	@Test
+	public void testRead2_nkjpfull() throws Exception {
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_FULL);
+		POSSample firstPosSample = sut.read();
+		assertNotNull(firstPosSample);
+
+		assertEquals(57, firstPosSample.getSentence().length);
+		assertEquals(firstPosSample.getSentence().length, firstPosSample.getTags().length);
+
+		assertEquals("Zatrzasnął", firstPosSample.getSentence()[0]);
+		assertEquals("praet:sg:m1:perf", firstPosSample.getTags()[0]);
+
+		POSSample secondPosSample = sut.read();
+		assertNotNull(secondPosSample);
+
+		assertEquals(8, secondPosSample.getSentence().length);
+		assertEquals(secondPosSample.getSentence().length, secondPosSample.getTags().length);
+
+		assertEquals("Bohaterem", secondPosSample.getSentence()[0]);
+		assertEquals("subst:sg:inst:m1", secondPosSample.getTags()[0]);
+
+		assertNotNull(sut.read());
+
+		sut.close();
+	}
+	@Test
 	public void testReset() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, false);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE);
 		POSSample firstSample = sut.read();
 		sut.reset();
 		POSSample shouldBeFirstSample = sut.read();

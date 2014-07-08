@@ -10,13 +10,13 @@ import java.util.List;
 
 public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 	private final List<InputStreamFactory> corpusPosFiles;
-	private final boolean useUniversalTags;
+	private final NkjpPOSSampleStream.NkjpTagset tagset;
 	private int currentIndex = 0;
 	private ObjectStream<POSSample> currentPosStream;
 
-	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory, boolean useUniversalTagSetInsteadOfOriginal) throws IOException {
+	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory, NkjpPOSSampleStream.NkjpTagset tagset) throws IOException {
 		corpusPosFiles = Arrays.asList(fileInputStreamFactory);
-		useUniversalTags = useUniversalTagSetInsteadOfOriginal;
+		this.tagset = tagset;
 		init();
 	}
 
@@ -45,7 +45,7 @@ public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 		}
 
 		try {
-			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex), useUniversalTags);
+			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex), tagset);
 			currentIndex++;
 			return newStream;
 		} catch (Exception e) {
