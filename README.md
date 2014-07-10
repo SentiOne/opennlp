@@ -1,7 +1,9 @@
 OpenNLP with NKJP corpus support
 =========
 
-This branch adds support for NKJP (Narodowy Korpus Języka Polskiego) corpus format. NKJP million sub-corpus is the only manually annotated corpus containing Part-Of-Speech annotation available for polish language at the moment. You can find the sub-corpus [here](http://clip.ipipan.waw.pl/LRT?action=AttachFile&do=get&target=NKJP-PodkorpusMilionowy-1.1.tgz). Keep in mind that NKJP corpus is released under GNU GPL v.3 (whereas OpenNLP is released under Apache 2.0 license). 
+This branch adds support for NKJP (Narodowy Korpus Języka Polskiego) corpus format. 
+
+NKJP million sub-corpus is the only manually annotated corpus containing Part-Of-Speech annotation available for polish language at the moment. You can find the sub-corpus [here](http://nkjp.pl/index.php?page=14&lang=1). Keep in mind that NKJP corpus is released under GNU GPL v.3 (whereas OpenNLP is released under Apache 2.0 license). 
 
 For now there's only support for extracting Part-Of-Speech information from the corpus which allows training POSTagger. 
 
