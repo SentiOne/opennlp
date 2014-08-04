@@ -11,12 +11,14 @@ import java.util.List;
 public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 	private final List<InputStreamFactory> corpusPosFiles;
 	private final NkjpPOSSampleStream.NkjpTagset tagset;
+	private final Boolean replacePolishCharacters;
 	private int currentIndex = 0;
 	private ObjectStream<POSSample> currentPosStream;
 
-	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory, NkjpPOSSampleStream.NkjpTagset tagset) throws IOException {
-		corpusPosFiles = Arrays.asList(fileInputStreamFactory);
+	public NkjpCorpusPOSSampleStream(InputStreamFactory[] fileInputStreamFactory, NkjpPOSSampleStream.NkjpTagset tagset, Boolean replacePolishCharacters) throws IOException {
+		this.corpusPosFiles = Arrays.asList(fileInputStreamFactory);
 		this.tagset = tagset;
+		this.replacePolishCharacters = replacePolishCharacters;
 		init();
 	}
 
@@ -45,7 +47,7 @@ public class NkjpCorpusPOSSampleStream implements ObjectStream<POSSample> {
 		}
 
 		try {
-			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex), tagset);
+			NkjpPOSSampleStream newStream =  new NkjpPOSSampleStream(corpusPosFiles.get(currentIndex), tagset, replacePolishCharacters);
 			currentIndex++;
 			return newStream;
 		} catch (Exception e) {

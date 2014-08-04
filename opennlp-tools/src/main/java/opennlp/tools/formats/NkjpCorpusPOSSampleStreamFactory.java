@@ -1,5 +1,6 @@
 package opennlp.tools.formats;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import opennlp.tools.cmdline.ArgumentParser;
 import opennlp.tools.cmdline.CmdLineUtil;
 import opennlp.tools.cmdline.StreamFactoryRegistry;
@@ -20,6 +21,9 @@ public class NkjpCorpusPOSSampleStreamFactory extends AbstractSampleStreamFactor
 	interface Parameters extends BasicFormatParams {
 		@ArgumentParser.ParameterDescription(valueName = "nkjp_full|nkjp|universal", description = "Which tagset should model learn. Nkjp which has 32 tags, or universal which is simplified and has only 12.")
 		String getTagset();
+
+		@ArgumentParser.ParameterDescription(valueName = "true|false", description = "Should ąęćłńóśżźĄĘĆŁŃÓŚŻŹ be replaced to aeclnoszzAECLNOSZZ when reading data.")
+		Boolean getReplacePolishCharacters();
 
 		@Override
 		@ArgumentParser.ParameterDescription(valueName = "sampleData", description = "Path to the nkjp directory corpus. It just should be an extracted nkjp corpus.")
@@ -81,7 +85,7 @@ public class NkjpCorpusPOSSampleStreamFactory extends AbstractSampleStreamFactor
 
 			InputStreamFactory[] corpusPosFiles = corpusPosFileList.toArray(new InputStreamFactory[corpusPosFileList.size()]);
 
-			return new NkjpCorpusPOSSampleStream(corpusPosFiles, chosenTagset);
+			return new NkjpCorpusPOSSampleStream(corpusPosFiles, chosenTagset, params.getReplacePolishCharacters());
 		} catch (IOException e) {
 			throw CmdLineUtil.createObjectStreamError(e);
 		}

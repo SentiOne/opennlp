@@ -3,7 +3,6 @@ package opennlp.tools.formats;
 import opennlp.tools.postag.POSSample;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -22,7 +21,7 @@ public class NkjpPOSSampleStreamTest {
 
 	@Test
 	public void testRead() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE, false);
 		long sentenceCount = 0;
 		long wordCount = 0;
 		long posCount = 0;
@@ -43,7 +42,7 @@ public class NkjpPOSSampleStreamTest {
 
 	@Test
 	public void testRead2() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE, false);
 		POSSample firstPosSample = sut.read();
 		assertNotNull(firstPosSample);
 
@@ -68,8 +67,25 @@ public class NkjpPOSSampleStreamTest {
 	}
 
 	@Test
+	public void testRead2_replacePolishCharacters() throws Exception {
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE, true);
+		POSSample firstPosSample = sut.read();
+		assertNotNull(firstPosSample);
+
+		assertEquals(57, firstPosSample.getSentence().length);
+		assertEquals(firstPosSample.getSentence().length, firstPosSample.getTags().length);
+
+		assertEquals("Zatrzasnal", firstPosSample.getSentence()[0]);
+		assertEquals("praet", firstPosSample.getTags()[0]);
+
+		assertNotNull(sut.read());
+
+		sut.close();
+	}
+
+	@Test
 	public void testRead2_universal() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.UNIVERSAL_TAGSET);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.UNIVERSAL_TAGSET, false);
 		POSSample firstPosSample = sut.read();
 		assertNotNull(firstPosSample);
 
@@ -95,7 +111,7 @@ public class NkjpPOSSampleStreamTest {
 
 	@Test
 	public void testRead2_nkjpfull() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_FULL);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_FULL, false);
 		POSSample firstPosSample = sut.read();
 		assertNotNull(firstPosSample);
 
@@ -118,13 +134,26 @@ public class NkjpPOSSampleStreamTest {
 
 		sut.close();
 	}
+
 	@Test
 	public void testReset() throws Exception {
-		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE);
+		NkjpPOSSampleStream sut = new NkjpPOSSampleStream(in, NkjpPOSSampleStream.NkjpTagset.NKJP_SIMPLE, false);
 		POSSample firstSample = sut.read();
 		sut.reset();
 		POSSample shouldBeFirstSample = sut.read();
 		assertArrayEquals(firstSample.getSentence(), shouldBeFirstSample.getSentence());
 		sut.close();
+	}
+
+	@Test
+	public void testRemovingPolishAccents_shouldRemoveAll() {
+		String accents = "ąęćłńóśżźĄĘĆŁŃÓŚŻŹ";
+		assertEquals("aeclnoszzAECLNOSZZ", NkjpPOSSampleStream.replacePolishCharactersWithCorrespondingAsciiLetters(accents));
+	}
+
+	@Test
+	public void testRemovingPolishAccents_shouldLeaveInterpunction() {
+		String noAccents = ":;\"'[]{}?/><,.!@#$%^&*()_-=+";
+		assertEquals(noAccents, NkjpPOSSampleStream.replacePolishCharactersWithCorrespondingAsciiLetters(noAccents));
 	}
 }

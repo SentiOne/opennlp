@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathConstants;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.Normalizer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 	private final XPathExpression wordExpression;
 	private final XPathExpression posExpression;
 	private final NkjpTagset tagset;
+	private final Boolean replacePolishCharacters;
 	private List<Element> sentenceList;
 	private int currentIndex = 0;
 
@@ -37,12 +39,12 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 		UNIVERSAL_TAGSET
 	}
 
-	// universal mapping
-	private final static HashMap<String, String> universalPosPlMapping = createMapping();
+	private final static HashMap<String, String> universalPosPlMapping = createNkjpToUniversalMapping();
 
-	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory, NkjpTagset tagset) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
+	public NkjpPOSSampleStream(InputStreamFactory inputStreamFactory, NkjpTagset tagset, Boolean replacePolishCharacters) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
 		this.sentenceList = new ArrayList<>();
 		this.tagset = tagset;
+		this.replacePolishCharacters = replacePolishCharacters;
 
 		InputStream inputStream = inputStreamFactory.createInputStream();
 		if (inputStream == null) {
@@ -99,7 +101,6 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 			partOfSpeach.add(stringStringPair.getValue());
 		}
 
-		// TODO: additional context?
 		return new POSSample(
             sentence.toArray(new String[sentence.size()]),
             partOfSpeach.toArray(new String[partOfSpeach.size()])
@@ -134,6 +135,10 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 				}
 			}
 
+			if (replacePolishCharacters) {
+				word = replacePolishCharactersWithCorrespondingAsciiLetters(word);
+			}
+
 			return new AbstractMap.SimpleEntry<String, String>(word, pos);
 		} catch (XPathExpressionException e1) {
 			throw new IOException("Expressions didn't match ", e1);
@@ -149,7 +154,19 @@ public class NkjpPOSSampleStream implements ObjectStream<POSSample> {
 	public void close() throws IOException {
 	}
 
-	private static HashMap<String, String> createMapping() {
+	// stackoverflow.com/questions/3322152
+	static String replacePolishCharactersWithCorrespondingAsciiLetters(String text) {
+		// Separate accents from letters
+		text = Normalizer.normalize(text, Normalizer.Form.NFD);
+		// Remove those accents
+		text = text.replaceAll("\\p{M}", "");
+		// finally we have to replace ł and Ł
+		text = text.replaceAll("ł", "l").replaceAll("Ł", "L");
+
+		return text;
+	}
+
+	private static HashMap<String, String> createNkjpToUniversalMapping() {
 		HashMap<String, String> map = new HashMap<>();
 		map.put("adj", "ADJ");
 		map.put("adja", "ADJ");
