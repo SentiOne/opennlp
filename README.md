@@ -10,17 +10,17 @@ For now there's only support for extracting Part-Of-Speech information from the 
 Assuming you extracted corpus to path ~/NKJP-PodkorpusMilionowy-1.0, this branch allows you to run the following commands:
 
 ```bash
-opennlp POSTaggerTrainer.nkjp -lang pl -model nkjp_short_pos_model.bin -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp
-opennlp POSTaggerTrainer.nkjp -lang pl -model nkjp_full_pos_model.bin -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp_full
-opennlp POSTaggerTrainer.nkjp -lang pl -model universal_pos_model.bin -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset universal
+opennlp POSTaggerTrainer.nkjp -lang pl -model nkjp_short_pos_model.bin -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp -replacePolishCharacters false
+opennlp POSTaggerTrainer.nkjp -lang pl -model nkjp_full_pos_model.bin -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp_full -replacePolishCharacters true
+opennlp POSTaggerTrainer.nkjp -lang pl -model universal_pos_model.bin -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset universal -replacePolishCharacters false
 
-opennlp POSTaggerCrossValidator.nkjp -lang pl -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp
-opennlp POSTaggerCrossValidator.nkjp -lang pl -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp_full
-opennlp POSTaggerCrossValidator.nkjp -lang pl -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset universal
+opennlp POSTaggerCrossValidator.nkjp -lang pl -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp false
+opennlp POSTaggerCrossValidator.nkjp -lang pl -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset nkjp_full false
+opennlp POSTaggerCrossValidator.nkjp -lang pl -data ~/NKJP-PodkorpusMilionowy-1.0/ -tagset universal false
 
-opennlp POSTaggerConverter nkjp -tagset nkjp -data ~/NKJP-PodkorpusMilionowy-1.0/ -encoding utf8 > output.txt
-opennlp POSTaggerConverter nkjp -tagset nkjp_full -data ~/NKJP-PodkorpusMilionowy-1.0/ -encoding utf8 > output.txt
-opennlp POSTaggerConverter nkjp -tagset universal -data ~/NKJP-PodkorpusMilionowy-1.0/ -encoding utf8 > output.txt
+opennlp POSTaggerConverter nkjp -tagset nkjp -data ~/NKJP-PodkorpusMilionowy-1.0/ -encoding utf8 > output.txt false
+opennlp POSTaggerConverter nkjp -tagset nkjp_full -data ~/NKJP-PodkorpusMilionowy-1.0/ -encoding utf8 > output.txt false
+opennlp POSTaggerConverter nkjp -tagset universal -data ~/NKJP-PodkorpusMilionowy-1.0/ -encoding utf8 > output.txt false
 ```
 
 As for available tags:
